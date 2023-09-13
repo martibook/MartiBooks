@@ -152,9 +152,10 @@ Loop-free distance vector protocol based on diffusing computation with coordinat
 
 ### Basic Vs Loop-free
 
-distance ij: only option -> a feasible set
-update message: all(might include old ones) -> latest updated ones
-if distance missing(or unavailable): leave it -> active solicit from neighbors 
+difference:
+- distance ij: only option -> a feasible set
+- update message: all(might include old ones) -> latest updated ones
+- if distance missing(or unavailable): leave it -> active solicit from neighbors 
 
 
 To summarize, it is possible to use a distance vector protocol framework and extend it for loop-free routing by using diffusing computations with coordinated updates. Like any protocols, it has limitations under certain conditions.
