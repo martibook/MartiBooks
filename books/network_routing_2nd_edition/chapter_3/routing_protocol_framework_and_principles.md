@@ -18,6 +18,8 @@
 
 [Link State Advertisement and Flooding](#link-state-advertisement-and-flooding)
 
+[Path Vector Routing Protocol](#path-vector-routing-protocol)
+
 # Overview
 
 Routing protocols are mechansims by which routing information is exchanged between routers so that routing decisions can be made
@@ -260,4 +262,126 @@ The sequence number begins in the negative space and continues to increment; onc
 
 R1 announces the sequence number Image to its neighbor R2. The neighbor R2 immediately knows that R1 must have restarted and sends a message to R1 announcing where R1 left off as the last sequence number before the failure. On hearing this sequence number, R1 now increments the counter and starts from the next sequence number in the next link state advertisement.
 
+.... I didn't finish it here ....
 
+
+
+# Path Vector Routing Protocol
+
+A path vector routing protocol is a more recent concept compared to both a distance vector protocol and the link state routing protocol.
+
+In fact, the entire idea about the path vector protocol is often tightly coupled to Border Gateway Protocol (BGP).
+
+a node receives the distance as well as **the entire path** to the destination from its neighbor. The path information is then helpful in detecting loops. 
+
+A node is thus required to maintain two tables: the path table for storing the current path to a destination and the routing table to identify the next hop for a destination for user traffic forwarding.
+
+
+![3.14](image-20.png)
+
+
+protocol message
+![protocol message](image-21.png)
+
+e.g.
+![Alt text](image-22.png)
+
+destination: j=3
+distance: d=0
+number of nodes: 1
+path known to 2: (3)
+
+
+Inclusion of the path vector allows a receiving node to catch any looping immediately;
+thus, rules such as split horizon that are used in a distance vector protocol to resolve similar issues are not necessary.
+
+
+On receiving the path vector message from node 2, the receiving nodes (nodes 1, 2, and 4, in this case) can check for any looping problem based on the path list and discard any path that can cause looping and update their path table that has **the least cost**. It is important to note that the path vector protocol inherently uses **Bellman–Ford** for computing the shortest path.
+
+On link failure, node 3 will send an “unreachable” message to its neighbors 2, 4, and 5 stating that path Image is not available.
+
+At about the same time, on receiving the “unreachable” message from node 3, node 4 will take the same action for destination node 6.
+
+However, node 5, on receiving the “unreachable” message from node 3, will realize that it can reach node 6, and thus will inform node 3 of its path vector to node 6.
+
+In turn, node 3, on learning about the new path vector, will send a follow-up path vector message to node 2 and node 4. On receiving this message, node 2 will update its path table to node 6.
+
+We can see that a path vector protocol requires more than the exchange of just path vector messages; specifically, a path vector protocol needs to provide the **ability to coordinate with neighbors**, which is helpful in discovering a new route, especially after a failure.
+
+
+
+a node may learn about multiple nonlooping paths to a destination from its different neighbors, and it may choose to cache multiple path entries in its path table
+
+while the path table may have multiple entries for each destination, the routing table points only to the next hop for the best or single preferred path for each destination unless there is a tie; in case of a tie, the routing table will enter the next hop for both paths.
+
+
+Questions:
+- it seems when a link failed, node 3 only update available paths to neighbors, it does not tell neighbors that a previous path is unavailable now?
+
+(This announcement will be understood by the receiving nodes as an **implicit withdrawal**, meaning its previous one does not work, and it is replaced by a new one.)
+
+(also, there is coordination, it sends withdrawl messages of a link when it fails)
+
+- when a node receive, say, path (3,5,6), how does it exactly update stored paths that contains (3...6), what's the rules to replace?
+
+(by P(known to i)kj, because in path vector protocol, a node i only receives path vector from its directly connected neighbors, so P(known to i)kj is distinct, we update this variable before compute the shortest path using Bellman-Ford)
+
+
+
+![Path vector protocol with path caching (node i's view)](image-23.png)
+
+
+a failure case with
+
+![Alt text](image-24.png)
+
+convergence can take quite a bit of time in case of a node failure when the failing node is connected to multiple nodes. 
+
+
+Finally, here is an important comment. A path vector protocol tries to avoid looping by not accepting a path from a neighboring node if this path already contains itself. However, in the presence of path caching, a node can switch to a secondary path, which can in fact lead to an unusual oscillatory problem during the transient period; thus, an important problem in the operation of a path vector protocol is the stable paths problem [323]. This says that instead of determining the shortest path, a solution that reaches an equilibrium point is desirable where each node has only a local minimum; note that it is possible to have multiple such solutions at an equilibrium point.
+
+
+Certainly, this implicitly assumes that all costs are hop-based instead of the link costs shown in Figure 3.3. In fact, BGP uses the notion of implicit hop-based cost. BGP has another difference; the node as described here is a model of a super-node that is called an Autonomous system on the Internet. This also results in a difference, instead of the simplifying assumption we have made that the node-ID is what is contained in a path vector message. Furthermore, **two supernodes may be connected by multiple links** where there may be a preference in regard to selecting one link over another. Thus, BGP is quite a bit more complicated than what we have described and illustrated here in regard to a path vector protocol; BGP will be discussed in detail in Chapter 9.
+
+
+
+
+
+
+# Exercises
+
+3.1  Review questions:
+
+(a)  How is split horizon with poisoned reverse different from split horizon?
+
+(b)  What are the sub-protocols of a link state protocol?
+
+(c)  List three differences between a distance vector protocol and a link state protocol.
+
+(d)  Compare and contrast announcements used by a basic distance vector protocol and the enhanced distance vector protocol based on the diffusing computation with coordinated update.
+
+3.2  Identify issues faced in a distance vector protocol that are addressed by a path vector protocol.
+
+3.3  Consider a link state protocol. Now, consider the following scenario: a node must not accept an LSA with age 0 if no LSA from the same node is already stored. Why is this condition needed?
+
+3.4  Study the ARPANET vulnerability discussed in RFC 789 [716].
+
+3.5  Consider the network given in Figure 3.13. Write the link state database at different nodes (similar to Table 3.3) before and after failure of link 4-5.
+
+3.6  Consider a seven-node ring network.
+
+(a)  If a distance vector protocol is used, determine how long it will take for all nodes to have the same routing information if updates are done every 10 sec.
+
+(b)  If a link state protocol is used, how long will it take before every node has the identical link state database if flooding is done every 5 sec? Determine how many link state messages in total are flooded till the time when all nodes have the identical database.
+
+3.7  Solve Exercise 3.6, now for a fully-connected 7-node network.
+
+3.8  Investigate how to resolve a stuck in active (SIA) situation that can occur in the distance vector protocol that is based on the diffusing computation with coordinated update (DUAL).
+
+3.9  Compare and contrast the distance vector protocol that is based on the diffusing computation with coordinated update (DUAL) and the Babel routing protocol, also based on the distance vector framework.
+
+3.10  Consider a fully-mesh N node network that is running a link state protocol. Suppose one of the nodes goes down. Estimate how many total link state messages will be generated.
+
+3.11  Implement a distance vector protocol using socket programming where the different “nodes” may be identified using port numbers. For this implementation project, define your own protocol format and the fields it must constitute.
+
+3.12  Implement a link state protocol using socket programming. You may do this implementation over TCP using different port numbers to identify different nodes. For this implementation project, define your own protocol format and the fields it must constitute.
