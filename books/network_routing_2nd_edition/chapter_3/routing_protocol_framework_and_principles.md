@@ -354,19 +354,40 @@ Certainly, this implicitly assumes that all costs are hop-based instead of the l
 
 (a)  How is split horizon with poisoned reverse different from split horizon?
 
+- poisoned reverse anounces when a link fails, while split horizon does not.
+
 (b)  What are the sub-protocols of a link state protocol?
+
+-
 
 (c)  List three differences between a distance vector protocol and a link state protocol.
 
+- distance vector every node maintains links between neighbors and itself, link state maintains an overall picture
+-
+-
+
+
 (d)  Compare and contrast announcements used by a basic distance vector protocol and the enhanced distance vector protocol based on the diffusing computation with coordinated update.
 
+- loop-free anouncements contain a set of feasible distance vector instead of just one
+-
+-
+
 3.2  Identify issues faced in a distance vector protocol that are addressed by a path vector protocol.
+
+- looping
+- count to infinity
 
 3.3  Consider a link state protocol. Now, consider the following scenario: a node must not accept an LSA with age 0 if no LSA from the same node is already stored. Why is this condition needed?
 
 3.4  Study the ARPANET vulnerability discussed in RFC 789 [716].
 
 3.5  Consider the network given in Figure 3.13. Write the link state database at different nodes (similar to Table 3.3) before and after failure of link 4-5.
+
+![3.13](image-25.png)
+
+![table 3.3](image-26.png)
+
 
 3.6  Consider a seven-node ring network.
 
